@@ -1,2 +1,2 @@
 build:
-	go build -o bin/hermes cmd/main.go
+	go build -o bin/hermes main.go
