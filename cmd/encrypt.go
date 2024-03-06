@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
-	"path"
 
 	"github.com/gustavobertoi/hermes/internal/files"
 	"github.com/gustavobertoi/hermes/internal/signatures"
@@ -68,7 +68,7 @@ func encrypt(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	rawEncrypt, err := signature.Encrypt(targetFile.Content())
+	encryptedFile, err := signature.Encrypt(targetFile.Content())
 	if err != nil {
 		cmd.Printf("Error encrypting file: %s", err)
 		os.Exit(1)
@@ -80,15 +80,19 @@ func encrypt(cmd *cobra.Command, args []string) {
 	cmd.Printf("Saving file in %s...", outputPath)
 	cmd.Println()
 
-	encryptedFileFullPath := path.Join(outputPath, targetFile.ID+".pem")
-	encryptedFile := files.NewFile(encryptedFileFullPath)
-	encryptedFile.SetContent(rawEncrypt)
-
-	if err := encryptedFile.Save(); err != nil {
+	encryptedFileName := fmt.Sprintf("%s-%s.txt", targetFile.ID, algorithm)
+	if err := encryptedFile.SaveContentToFile(outputPath, encryptedFileName); err != nil {
 		cmd.Printf("Error saving file: %s", err)
 		os.Exit(1)
 		return
 	}
 
-	cmd.Printf("File saved in %s", encryptedFile.Path())
+	encryptedHashSumName := fmt.Sprintf("%s-hash-sum.txt", targetFile.ID)
+	if err := encryptedFile.SaveHashSum(outputPath, encryptedHashSumName); err != nil {
+		cmd.Printf("Error saving hash sum: %s", err)
+		os.Exit(1)
+		return
+	}
+
+	cmd.Printf("File saved in %s", outputPath)
 }

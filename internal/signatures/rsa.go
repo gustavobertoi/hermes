@@ -4,14 +4,16 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
-	"hash"
+	"crypto/x509"
+	"encoding/pem"
+	"io"
+	"os"
+	"path"
 )
 
 type RSASignature struct {
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
-	hash       hash.Hash
-	hashSum    [32]byte
 	Signature
 }
 
@@ -19,13 +21,10 @@ func NewRSASignature() *RSASignature {
 	return &RSASignature{
 		privateKey: nil,
 		publicKey:  nil,
-		hash:       nil,
-		hashSum:    [32]byte{},
 	}
 }
 
 func (s *RSASignature) Generate() error {
-	s.hash = sha256.New()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return err
@@ -67,25 +66,105 @@ func (s *RSASignature) SetPublicKey(publicKey interface{}) error {
 	return nil
 }
 
-func (s *RSASignature) Encrypt(data []byte) ([]byte, error) {
-	s.hashSum = sha256.Sum256(data)
-	return rsa.EncryptOAEP(
-		s.hash,
+func (s *RSASignature) Encrypt(data []byte) (*Output, error) {
+	hash := sha256.New()
+	hashSum := sha256.Sum256(data)
+	content, err := rsa.EncryptOAEP(
+		hash,
 		rand.Reader,
 		s.publicKey,
 		data,
 		[]byte(""),
 	)
+	if err != nil {
+		return nil, err
+	}
+	return NewOutput(hash, hashSum, content), nil
 }
 
-func (s *RSASignature) Decrypt(data []byte) ([]byte, error) {
-	return rsa.DecryptOAEP(s.hash, rand.Reader, s.privateKey, data, []byte(""))
+func (s *RSASignature) Decrypt(output *Output) ([]byte, error) {
+	return rsa.DecryptOAEP(output.Hash(), rand.Reader, s.privateKey, output.Content(), []byte(""))
 }
 
-func (s *RSASignature) GetHashSum() [32]byte {
-	return s.hashSum
+func (s *RSASignature) Save(folderPath string) error {
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(s.privateKey)
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(s.publicKey)
+	if err != nil {
+		return err
+	}
+
+	privateKeyPath := path.Join(folderPath, "private_key.pem")
+	err = saveRsaKeyToFile(privateKeyPath, privateKeyBytes, "RSA PRIVATE KEY")
+	if err != nil {
+		return err
+	}
+
+	publicKeyPath := path.Join(folderPath, "public_key.pem")
+	err = saveRsaKeyToFile(publicKeyPath, publicKeyBytes, "RSA PUBLIC KEY")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s *RSASignature) GetHash() hash.Hash {
-	return s.hash
+func (s *RSASignature) Load(folderPath string) error {
+	privateKeyPath := path.Join(folderPath, "private_key.pem")
+	privateKey, publicKey, err := readRsaKeyFromFile(privateKeyPath)
+	if err != nil {
+		return err
+	}
+	if privateKey == nil {
+		return ErrNullPrivateKey
+	}
+	if publicKey == nil {
+		return ErrNullPublicKey
+	}
+	s.privateKey = privateKey
+	s.publicKey = publicKey
+	return nil
+}
+
+func saveRsaKeyToFile(filename string, keyBytes []byte, keyType string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	err = pem.Encode(file, &pem.Block{Type: keyType, Bytes: keyBytes})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readRsaKeyFromFile(filePath string) (*rsa.PrivateKey, *rsa.PublicKey, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+	keyBytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, nil, err
+	}
+	block, _ := pem.Decode(keyBytes)
+	if block == nil {
+		return nil, nil, ErrDecodingPemBlock
+	}
+	if block.Type == "RSA PRIVATE KEY" {
+		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, nil, err
+		}
+		return privateKey, &privateKey.PublicKey, nil
+	}
+	if block.Type == "RSA PUBLIC KEY" {
+		publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, publicKey.(*rsa.PublicKey), nil
+	}
+	return nil, nil, ErrUnknownPemType
 }
