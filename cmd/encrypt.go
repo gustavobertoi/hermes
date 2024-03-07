@@ -13,20 +13,10 @@ var encryptCmd = &cobra.Command{
 	Use:     "encrypt",
 	Short:   "Encrypt a file using assimetric signatures",
 	Aliases: []string{"e", "enc"},
-	Run:     encrypt,
+	Run:     encryptHandler,
 }
 
-func initEncrypt() {
-	encryptCmd.Flags().StringP("input", "i", "", "Input file path")
-	encryptCmd.Flags().StringP("output", "o", "", "Output file path")
-	encryptCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for encryption")
-	encryptCmd.MarkFlagRequired("input")
-	encryptCmd.MarkFlagRequired("output")
-	encryptCmd.MarkFlagRequired("algorithm")
-	rootCmd.AddCommand(encryptCmd)
-}
-
-func encrypt(cmd *cobra.Command, args []string) {
+func encryptHandler(cmd *cobra.Command, args []string) {
 	inputPath, err := cmd.Flags().GetString("input")
 	if err != nil {
 		cmd.Printf("Error reading input path: %s", err)

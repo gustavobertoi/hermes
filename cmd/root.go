@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/common-nighthawk/go-figure"
+	"github.com/gustavobertoi/hermes/internal/signatures"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,13 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	initEncrypt()
+	encryptCmd.Flags().StringP("input", "i", "", "Input file path")
+	encryptCmd.Flags().StringP("output", "o", "", "Output file path")
+	encryptCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for encryption")
+	encryptCmd.MarkFlagRequired("input")
+	encryptCmd.MarkFlagRequired("output")
+
+	rootCmd.AddCommand(initCmd, encryptCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
