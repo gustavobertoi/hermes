@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/common-nighthawk/go-figure"
-	"github.com/gustavobertoi/hermes/internal/signatures"
+	"github.com/gustavobertoi/hermes/signatures"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,9 @@ func Execute() {
 	encryptCmd.MarkFlagRequired("input")
 	encryptCmd.MarkFlagRequired("output")
 
-	rootCmd.AddCommand(initCmd, encryptCmd)
+	signatureCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for signature")
+
+	rootCmd.AddCommand(encryptCmd, signatureCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

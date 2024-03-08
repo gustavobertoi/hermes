@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	uuid "github.com/gustavobertoi/hermes/pkg"
+	"github.com/gustavobertoi/hermes/pkg"
 )
 
 type File struct {
@@ -19,7 +19,7 @@ type File struct {
 
 // This is a constructor for the File struct, creates a empty file with a unique ID
 func NewFile(fullPath string) *File {
-	id := uuid.NewUUID()
+	id := pkg.NewUUID()
 	folderPath := path.Dir(fullPath)
 	fileName := path.Base(fullPath)
 	return &File{

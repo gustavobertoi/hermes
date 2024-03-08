@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gustavobertoi/hermes/internal/files"
-	"github.com/gustavobertoi/hermes/internal/signatures"
+	"github.com/gustavobertoi/hermes/files"
+	"github.com/gustavobertoi/hermes/signatures"
 	"github.com/spf13/cobra"
 )
 
@@ -21,48 +21,41 @@ func encryptHandler(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cmd.Printf("Error reading input path: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	outputPath, err := cmd.Flags().GetString("output")
 	if err != nil {
 		cmd.Printf("Error reading output path: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	algorithm, err := cmd.Flags().GetString("algorithm")
 	if err != nil {
 		cmd.Printf("Error reading algorithm: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	targetFile := files.NewFile(inputPath)
 	if err := targetFile.Load(); err != nil {
 		cmd.Printf("Error loading file: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	signature := signatures.NewSignature(algorithm)
 	if signature == nil {
 		cmd.Print("Signature algorithm not supported")
 		os.Exit(1)
-		return
 	}
 
 	if err := signature.Generate(); err != nil {
 		cmd.Printf("Error generating signature: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	encryptedFile, err := signature.Encrypt(targetFile.Content())
 	if err != nil {
 		cmd.Printf("Error encrypting file: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	cmd.Printf("File %s (%s) is encrypted with algorithm %s\n", targetFile.Name(), targetFile.ID, algorithm)
@@ -74,14 +67,12 @@ func encryptHandler(cmd *cobra.Command, args []string) {
 	if err := encryptedFile.SaveContentToFile(outputPath, encryptedFileName); err != nil {
 		cmd.Printf("Error saving file: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	encryptedHashSumName := fmt.Sprintf("%s-hash-sum.txt", targetFile.ID)
 	if err := encryptedFile.SaveHashSum(outputPath, encryptedHashSumName); err != nil {
 		cmd.Printf("Error saving hash sum: %s", err)
 		os.Exit(1)
-		return
 	}
 
 	cmd.Printf("File saved in %s", outputPath)

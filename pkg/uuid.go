@@ -1,4 +1,4 @@
-package uuid
+package pkg
 
 import (
 	"regexp"
