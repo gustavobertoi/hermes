@@ -14,6 +14,7 @@ var defaultFolderName = ".hermes"
 var defaultFileName = "hermes.json"
 
 var signaturesFolder = "signatures"
+var filesFolder = "files"
 
 var config *Config
 
@@ -103,8 +104,23 @@ func (c *Config) GetSignature(algorithm string) (signatures.Signature, error) {
 	if c.Signatures == nil {
 		c.Signatures = make(map[string]*PersonalSignature)
 	}
-	if sig, ok := c.Signatures[algorithm]; ok {
-		return sig.signature, nil
+	if ps, ok := c.Signatures[algorithm]; ok {
+		if ps.signature == nil {
+			sig := signatures.NewSignature(algorithm)
+			if err := sig.Load(ps.KeysPath); err != nil {
+				return nil, err
+			}
+			ps.signature = &sig
+		}
+		return *ps.signature, nil
 	}
 	return nil, signatures.ErrSignatureNotFound
+}
+
+func (c *Config) GetFilesPathBySignature(algorithm string) (string, error) {
+	folderPath := path.Join(c.folderPath, signaturesFolder, algorithm, filesFolder)
+	if err := pkg.CreateFolderIfNotExists(folderPath); err != nil {
+		return "", err
+	}
+	return folderPath, nil
 }

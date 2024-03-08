@@ -34,7 +34,7 @@ func (o *Output) Content() []byte {
 	return o.content
 }
 
-func (o *Output) SaveContentToFile(folderPath string, fileName string) error {
+func (o *Output) Save(folderPath string, fileName string) error {
 	encodedText := base64.StdEncoding.EncodeToString(o.content)
 	filePath := path.Join(folderPath, fileName)
 	file, err := os.Create(filePath)

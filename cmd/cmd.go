@@ -28,11 +28,9 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	encryptCmd.Flags().StringP("input", "i", "", "Input file path")
-	encryptCmd.Flags().StringP("output", "o", "", "Output file path")
-	encryptCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for encryption")
-	encryptCmd.MarkFlagRequired("input")
-	encryptCmd.MarkFlagRequired("output")
+	encryptCmd.Flags().StringP("file", "f", "", "Input file path")
+	encryptCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for encryption (needs to be a valid algorithm)")
+	encryptCmd.MarkFlagRequired("file")
 
 	signatureCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for signature")
 
