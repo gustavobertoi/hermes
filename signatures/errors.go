@@ -9,4 +9,5 @@ var (
 	ErrUnknownPemType    = errors.New("unknown pem type")
 	ErrNullPrivateKey    = errors.New("null private key")
 	ErrNullPublicKey     = errors.New("null public key")
+	ErrCipherTextShort   = errors.New("ciphertext too short")
 )

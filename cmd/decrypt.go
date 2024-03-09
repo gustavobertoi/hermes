@@ -64,4 +64,5 @@ func decryptHandler(cmd *cobra.Command, args []string) {
 	cmd.Printf("File %s (%s) is decrypted with algorithm %s\n", file.Name(), file.ID, algorithm)
 	cmd.Println()
 	cmd.Printf("Decrypted content: %s\n", string(decryptedFile.Content()))
+
 }
