@@ -10,5 +10,5 @@ type Signature interface {
 	Save(folderPath string) error
 	Load(folderPath string) error
 	Encrypt(data []byte) (*Output, error)
-	Decrypt(output *Output) ([]byte, error)
+	Decrypt(data []byte) (*Output, error)
 }

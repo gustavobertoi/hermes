@@ -82,8 +82,14 @@ func (s *RSASignature) Encrypt(data []byte) (*Output, error) {
 	return NewOutput(hash, hashSum, content), nil
 }
 
-func (s *RSASignature) Decrypt(output *Output) ([]byte, error) {
-	return rsa.DecryptOAEP(output.Hash(), rand.Reader, s.privateKey, output.Content(), []byte(""))
+func (s *RSASignature) Decrypt(data []byte) (*Output, error) {
+	hash := sha256.New()
+	content, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, s.privateKey, data, []byte(""))
+	if err != nil {
+		return nil, err
+	}
+	hashSum := sha256.Sum256(content)
+	return NewOutput(hash, hashSum, content), nil
 }
 
 func (s *RSASignature) Save(folderPath string) error {

@@ -82,6 +82,17 @@ func (f *File) Content() []byte {
 	return f.content
 }
 
+func (f *File) GetContentDecoded() ([]byte, error) {
+	if pkg.IsBase64(string(f.content)) {
+		decoded, err := pkg.DecodeFromBase64(string(f.content))
+		if err != nil {
+			return nil, err
+		}
+		return decoded, nil
+	}
+	return f.content, nil
+}
+
 func (f *File) SizeInBytes() int64 {
 	return f.sizeInBytes
 }

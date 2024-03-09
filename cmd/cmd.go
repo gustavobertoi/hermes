@@ -34,7 +34,12 @@ func Execute() {
 
 	signatureCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for signature")
 
-	rootCmd.AddCommand(encryptCmd, signatureCmd)
+	decryptCmd.Flags().StringP("file", "f", "", "Input file path")
+	decryptCmd.Flags().StringP("algorithm", "a", signatures.RSA, "Algorithm to use for decryption (needs to be a valid algorithm)")
+	decryptCmd.MarkFlagRequired("file")
+	decryptCmd.MarkFlagRequired("algorithm")
+
+	rootCmd.AddCommand(encryptCmd, signatureCmd, decryptCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

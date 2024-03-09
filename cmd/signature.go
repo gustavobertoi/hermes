@@ -11,7 +11,7 @@ import (
 var signatureCmd = &cobra.Command{
 	Use:     "signature",
 	Short:   "Manage our signature to encrypt and decrypt files",
-	Aliases: []string{"sig"},
+	Aliases: []string{"s", "sig"},
 	Run:     signatureHandler,
 }
 
