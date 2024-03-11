@@ -27,20 +27,16 @@ func GetConfig() (*Config, error) {
 	if config != nil {
 		return config, nil
 	}
-
 	// Get the user home directory and create the .hermes folder if it doesn't exist
 	usr, err := user.Current()
 	if err != nil {
 		return nil, err
 	}
-
 	folderPath := path.Join(usr.HomeDir, defaultFolderName)
 	filePath := path.Join(folderPath, defaultFileName)
-
 	if err := pkg.CreateFolderIfNotExists(folderPath); err != nil {
 		return nil, err
 	}
-
 	if !pkg.ExistsFile(filePath) {
 		defaultConfig := &Config{
 			Signatures: make(map[string]*PersonalSignature),
@@ -50,13 +46,10 @@ func GetConfig() (*Config, error) {
 		}
 		return defaultConfig, nil
 	}
-
 	// Open the hermes.json file and read the data
 	config = &Config{}
 	pkg.ReadFileAndBindToJson(filePath, config)
-
 	config.folderPath = folderPath
-
 	return config, nil
 }
 
@@ -82,11 +75,8 @@ func (c *Config) AddSignature(algorithm string, sig signatures.Signature) error 
 	if c.Signatures == nil {
 		c.Signatures = make(map[string]*PersonalSignature)
 	}
-
 	folderPath := path.Join(c.folderPath, signaturesFolder, algorithm)
-
 	c.Signatures[algorithm] = NewPersonalSignature(algorithm, folderPath, sig)
-
 	if err := pkg.CreateFolderIfNotExists(folderPath); err != nil {
 		return err
 	}
@@ -96,7 +86,6 @@ func (c *Config) AddSignature(algorithm string, sig signatures.Signature) error 
 	if err := c.SaveConfig(); err != nil {
 		return err
 	}
-
 	return nil
 }
 

@@ -49,12 +49,8 @@ func decryptHandler(cmd *cobra.Command, args []string) {
 
 	cmd.Printf("Decrypting file %s (%s) with algorithm %s\n", file.Name(), file.ID, algorithm)
 
-	content, err := file.GetContentDecoded()
-	if err != nil {
-		cmd.Printf("Error getting content: %s", err)
-		os.Exit(1)
-	}
-	decryptedFile, err := signature.Decrypt([]byte(content))
+	content := file.Content()
+	decryptedFile, err := signature.Decrypt(content)
 	if err != nil {
 		cmd.Printf("Error decrypting file: %s", err)
 		os.Exit(1)
@@ -63,6 +59,7 @@ func decryptHandler(cmd *cobra.Command, args []string) {
 	cmd.Println()
 	cmd.Printf("File %s (%s) is decrypted with algorithm %s\n", file.Name(), file.ID, algorithm)
 	cmd.Println()
-	cmd.Printf("Decrypted content: %s\n", string(decryptedFile.Content()))
+
+	cmd.Printf("Decrypted content: %s\n", string(decryptedFile))
 
 }

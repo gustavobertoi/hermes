@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"os"
+	"path"
 )
 
 func CreateFolderIfNotExists(folderPath string) error {
@@ -29,6 +30,17 @@ func ReadFileAndBindToJson(filePath string, v interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(data, v); err != nil {
+		return err
+	}
+	return nil
+}
+
+func WriteToFile(folderPath string, fileName string, data []byte) error {
+	if err := CreateFolderIfNotExists(folderPath); err != nil {
+		return err
+	}
+	filePath := path.Join(folderPath, fileName)
+	if err := os.WriteFile(filePath, data, os.ModePerm); err != nil {
 		return err
 	}
 	return nil

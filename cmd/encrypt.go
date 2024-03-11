@@ -6,6 +6,7 @@ import (
 
 	"github.com/gustavobertoi/hermes/config"
 	"github.com/gustavobertoi/hermes/files"
+	"github.com/gustavobertoi/hermes/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +48,7 @@ func encryptHandler(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	encryptedFile, err := signature.Encrypt(file.Content())
+	encryptedData, err := signature.Encrypt(file.Content())
 	if err != nil {
 		cmd.Printf("Error encrypting file: %s", err)
 		os.Exit(1)
@@ -65,16 +66,10 @@ func encryptHandler(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if err := encryptedFile.Save(outputPath, encryptedFileName); err != nil {
+	if err := pkg.WriteToFile(outputPath, encryptedFileName, encryptedData); err != nil {
 		cmd.Printf("Error saving file: %s", err)
 		os.Exit(1)
 	}
 
-	encryptedHashSumName := fmt.Sprintf("%s-hash-sum.txt", file.ID)
-	if err := encryptedFile.SaveHashSum(outputPath, encryptedHashSumName); err != nil {
-		cmd.Printf("Error saving hash sum: %s", err)
-		os.Exit(1)
-	}
-
-	cmd.Printf("Files (%s, %s) saved in %s", encryptedFileName, encryptedHashSumName, outputPath)
+	cmd.Printf("Files (%s) saved in %s", encryptedFileName, outputPath)
 }

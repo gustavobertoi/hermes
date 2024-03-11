@@ -25,7 +25,7 @@ func NewRSASignature() *RSASignature {
 }
 
 func (s *RSASignature) Generate() error {
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return err
 	}
@@ -34,43 +34,9 @@ func (s *RSASignature) Generate() error {
 	return nil
 }
 
-func (s *RSASignature) GetPrivateKey() interface{} {
-	return s.privateKey
-}
-
-func (s *RSASignature) GetPublicKey() interface{} {
-	return s.publicKey
-}
-
-func (s *RSASignature) GetPublicKeyString() string {
-	pubkey := s.publicKey
-	return string(pubkey.N.Bytes())
-}
-
-func (s *RSASignature) SetPrivateKey(privateKey interface{}) error {
-	pk, ok := privateKey.(*rsa.PrivateKey)
-	if !ok {
-		return ErrInvalidKeyType
-	}
-	s.privateKey = pk
-	s.publicKey = &pk.PublicKey
-	return nil
-}
-
-func (s *RSASignature) SetPublicKey(publicKey interface{}) error {
-	pk, ok := publicKey.(*rsa.PublicKey)
-	if !ok {
-		return ErrInvalidKeyType
-	}
-	s.publicKey = pk
-	return nil
-}
-
-func (s *RSASignature) Encrypt(data []byte) (*Output, error) {
-	hash := sha256.New()
-	hashSum := sha256.Sum256(data)
-	content, err := rsa.EncryptOAEP(
-		hash,
+func (s *RSASignature) Encrypt(data []byte) ([]byte, error) {
+	data, err := rsa.EncryptOAEP(
+		sha256.New(),
 		rand.Reader,
 		s.publicKey,
 		data,
@@ -79,17 +45,15 @@ func (s *RSASignature) Encrypt(data []byte) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewOutput(hash, hashSum, content), nil
+	return data, nil
 }
 
-func (s *RSASignature) Decrypt(data []byte) (*Output, error) {
-	hash := sha256.New()
-	content, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, s.privateKey, data, []byte(""))
+func (s *RSASignature) Decrypt(data []byte) ([]byte, error) {
+	data, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, s.privateKey, data, []byte(""))
 	if err != nil {
 		return nil, err
 	}
-	hashSum := sha256.Sum256(content)
-	return NewOutput(hash, hashSum, content), nil
+	return data, nil
 }
 
 func (s *RSASignature) Save(folderPath string) error {
